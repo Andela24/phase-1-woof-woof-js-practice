@@ -13,18 +13,32 @@ let state = {
     dogs: [],
     filter: false
 }
+document.addEventListener('DOMContentLoaded', getDogs() )
 
 //fetch doggies 
 //get dogs from the server
 function getDogs() {
    return fetch('http://localhost:3000/pups')
     .then(resp => resp.json())
+    .then(dogs => {
+        state.dogs = dogs
+        addDogTags(state.dogs)
+    })
 }
 
-//create a single dog bar item
-    // const renderDogBarItem = dog =>  //showing on the page/DOM
-    // `<span data-id=${dog.id} class='dog-bar-item'>${dog.name}</span>` //returning the string
+//update dog on server
+function updateDog(dog) {
+    return fetch('http://localhost:3000/pups/${dog.id}', {
+    method:"PATCH",
+    headers: {
+    "Content-Type": "application/json"
+    },
+    body: JSON.stringify(dog)
+    }) .then(resp => resp.json())
+    }
 
+
+//create a single dog bar item
 function addDogTag(dog) {
     const dogTag = document.createElement('span')
     dogTag.innerText = dog.name
@@ -44,24 +58,20 @@ function addDogTags(dogs){
 
 //a single event listener to listen to span clicks
 
-// document.addEventListener('click', event => {
-//    if(event.target.className === 'dog-bar-item') {
-//     const id = event.target.dataset.id
-//     const foundDog = state.dogs.find( dog => dog.id === parseInt(id)) //finding specific dog, does the dog name match
-//     displayDog(foundDog)
-//    }
-// })
 
 // display- put the dog on the page
 function displayDog(dog) {
      dogInfo.innerHTML = `
     <img src="${dog.image}">
     <h2>${dog.name}</h2>
-    <button id='toggle-good-day'>${dog.isGoodDog ? 'Good' : 'Bad'} Dog!</button>
+    <button id='toggle-good-dog'>${dog.isGoodDog ? 'Good' : 'Bad'} Dog!</button>
 `
 const toggleBtn = dogInfo.querySelector('#toggle-good-dog')//adding the button
-toggleBtn.addEventListener('click', () => toggleGoodDog(dog))//when user clicks
-
+console.log(toggleBtn)
+toggleBtn.addEventListener('click', () => {  //when user clicks
+toggleGoodDog(dog)
+updateDog(dog)
+})
 }
 
 
@@ -81,6 +91,7 @@ filterDog.addEventListener('click', () => {
 
 })
 
+// update the dog bar
 function toggleDogsTags() {
     const filterDogs = state.filter
     ? state.dogs.filter(dog => dog.isGoodDog)
@@ -91,8 +102,4 @@ function toggleDogsTags() {
 
 
 
-getDogs()
-.then(dogs => {
-    state.dogs = dogs
-    addDogTags(state.dogs)
-})
+
